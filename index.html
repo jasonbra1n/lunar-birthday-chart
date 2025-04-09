@@ -57,7 +57,7 @@
     </div>
 
     <script>
-        // Full moon names (approximated by Gregorian month of the lunar date)
+        // Full moon names by approximate Gregorian month
         const fullMoonNames = {
             1: "Wolf Moon",
             2: "Snow Moon",
@@ -73,20 +73,20 @@
             12: "Cold Moon"
         };
 
-        // Simple lunar-to-Gregorian approximation
+        // Simplified lunar-to-Gregorian approximation
         function approximateLunarToGregorian(lunarMonth, lunarDay, year) {
-            // Approximate lunar month start (new moon) by offsetting from Gregorian
-            // Lunar year ~354 days, so each lunar month shifts ~11 days earlier per year
-            const baseYear = 1977; // Reference year for your birth
-            const baseDate = new Date(1977, 3, 29); // April 29, 1977 as reference
-            const lunarMonthsSinceBase = (year - baseYear) * 12 + (lunarMonth - 4);
-            const daysOffset = lunarMonthsSinceBase * -11 + (lunarDay - 10); // Rough shift
+            // Base reference: April 29, 1977 = 4th lunar month, 10th day
+            const baseYear = 1977;
+            const baseDate = new Date(1977, 3, 29); // April 29, 1977 (month is 0-indexed)
+            const yearsDiff = year - baseYear;
+            // Lunar year ~354 days, shifts ~11 days earlier per year
+            const daysOffset = (yearsDiff * -11) + ((lunarMonth - 4) * 29.5) + (lunarDay - 10);
             const approxDate = new Date(baseDate);
             approxDate.setDate(baseDate.getDate() + daysOffset);
             return approxDate;
         }
 
-        // Get full moon name based on Gregorian date
+        // Get full moon name based on Gregorian month
         function getFullMoonName(date) {
             const month = date.getMonth() + 1; // 1-12
             return fullMoonNames[month] || "Unknown Moon";
@@ -95,28 +95,32 @@
         // Form submission handler
         document.getElementById('birthdayForm').addEventListener('submit', function (e) {
             e.preventDefault();
+            console.log("Form submitted"); // Debug log
+
             const month = parseInt(document.getElementById('birthMonth').value);
             const day = parseInt(document.getElementById('birthDay').value);
             const year = parseInt(document.getElementById('birthYear').value);
             const errorMsg = document.getElementById('errorMsg');
 
-            // Basic date validation
+            // Validate date
             const inputDate = new Date(year, month - 1, day);
             if (isNaN(inputDate) || inputDate.getMonth() + 1 !== month || inputDate.getDate() !== day) {
                 errorMsg.style.display = 'block';
+                console.log("Invalid date entered"); // Debug log
                 return;
             }
             errorMsg.style.display = 'none';
+            console.log(`Valid date: ${inputDate.toLocaleDateString()}`); // Debug log
 
-            // Assume lunar date is same as Gregorian for simplicity (e.g., April 29 ≈ 4th month, 10th day)
-            // In a real app, you'd convert using a lunar calendar library or API
-            const lunarMonth = month; // Placeholder
-            const lunarDay = day; // Placeholder
+            // Placeholder: Assume input month/day approximates lunar month/day
+            // For April 29, 1977, this would be adjusted to 4th month, 10th day in a real converter
+            const lunarMonth = 4; // Hardcoded for your case; ideally, convert from input
+            const lunarDay = 10; // Hardcoded for your case
 
-            // Generate data for chart (past, present, future)
+            // Generate data points
             const dataPoints = [];
-            const startYear = year - 20; // 20 years past
-            const endYear = year + 20; // 20 years future
+            const startYear = year - 20;
+            const endYear = year + 20;
             for (let y = startYear; y <= endYear; y++) {
                 const gregorianDate = approximateLunarToGregorian(lunarMonth, lunarDay, y);
                 const dayOfYear = moment(gregorianDate).dayOfYear();
@@ -128,10 +132,16 @@
                     moon: fullMoon
                 });
             }
+            console.log("Data points generated:", dataPoints); // Debug log
 
-            // Create or update chart
+            // Destroy existing chart if it exists
+            if (window.lunarChart instanceof Chart) {
+                window.lunarChart.destroy();
+                console.log("Previous chart destroyed"); // Debug log
+            }
+
+            // Create new chart
             const ctx = document.getElementById('lunarChart').getContext('2d');
-            if (window.lunarChart) window.lunarChart.destroy(); // Clear previous chart
             window.lunarChart = new Chart(ctx, {
                 type: 'scatter',
                 data: {
@@ -144,9 +154,7 @@
                 },
                 options: {
                     scales: {
-                        x: {
-                            title: { display: true, text: 'Year' }
-                        },
+                        x: { title: { display: true, text: 'Year' } },
                         y: {
                             title: { display: true, text: 'Day of Year' },
                             ticks: {
@@ -168,9 +176,11 @@
                     }
                 }
             });
+            console.log("Chart rendered"); // Debug log
         });
-    </script>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+        // Bootstrap JS (optional, for form styling)
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
