@@ -82,11 +82,12 @@
         };
 
         // Simplified lunar-to-Gregorian approximation
-        function approximateLunarToGregorian(lunarMonth, lunarDay, year) {
-            const baseYear = 1977;
-            const baseDate = new Date(1977, 3, 29); // April 29, 1977
-            const yearsDiff = year - baseYear;
-            const daysOffset = (yearsDiff * -11) + ((lunarMonth - 4) * 29.5) + (lunarDay - 10);
+        function approximateLunarToGregorian(birthDate, targetYear) {
+            const baseDate = new Date(birthDate); // Use input birth date as base
+            const baseYear = baseDate.getFullYear();
+            const yearsDiff = targetYear - baseYear;
+            // Lunar year ~354 days, shifts ~11 days earlier per year
+            const daysOffset = yearsDiff * -11; // Simple shift approximation
             const approxDate = new Date(baseDate);
             approxDate.setDate(baseDate.getDate() + daysOffset);
             return approxDate;
@@ -111,8 +112,8 @@
             const result = document.getElementById('result');
 
             // Validate date
-            const inputDate = new Date(year, month - 1, day);
-            if (isNaN(inputDate) || inputDate.getMonth() + 1 !== month || inputDate.getDate() !== day) {
+            const birthDate = new Date(year, month - 1, day);
+            if (isNaN(birthDate) || birthDate.getMonth() + 1 !== month || birthDate.getDate() !== day) {
                 errorMsg.style.display = 'block';
                 result.textContent = '';
                 console.log("Invalid date entered");
@@ -120,11 +121,7 @@
             }
             errorMsg.style.display = 'none';
             chartError.style.display = 'none';
-            console.log(`Valid date: ${inputDate.toLocaleDateString()}`);
-
-            // Hardcoded lunar date for your case (April 29, 1977 = 4th month, 10th day)
-            const lunarMonth = 4;
-            const lunarDay = 10;
+            console.log(`Valid date: ${birthDate.toLocaleDateString()}`);
 
             // Generate data points from birth year to current year + 10
             const dataPoints = [];
@@ -132,7 +129,7 @@
             const currentYear = 2025; // Current year as of April 9, 2025
             const endYear = currentYear + 10; // 2035
             for (let y = startYear; y <= endYear; y++) {
-                const gregorianDate = approximateLunarToGregorian(lunarMonth, lunarDay, y);
+                const gregorianDate = approximateLunarToGregorian(birthDate, y);
                 const dayOfYear = moment(gregorianDate).dayOfYear();
                 const fullMoon = getFullMoonName(gregorianDate);
                 dataPoints.push({
@@ -144,8 +141,8 @@
             }
             console.log("Data points generated:", dataPoints);
 
-            // Calculate this year's lunar birthday
-            const thisYearDate = approximateLunarToGregorian(lunarMonth, lunarDay, currentYear);
+            // Calculate this year's lunar birthday (2025)
+            const thisYearDate = approximateLunarToGregorian(birthDate, currentYear);
             const thisYearMoon = getFullMoonName(thisYearDate);
             result.textContent = `Your Lunar Birthday this year is ${thisYearDate.toLocaleDateString()}, under the ${thisYearMoon}.`;
             console.log(`This year's lunar birthday: ${thisYearDate.toLocaleDateString()}`);
@@ -171,7 +168,7 @@
                 data: {
                     datasets: [{
                         label: 'Lunar Birthday',
-                        data: dataPoints, // Use full dataPoints array
+                        data: dataPoints,
                         backgroundColor: 'rgba(0, 123, 255, 0.7)',
                         pointRadius: 5
                     }]
@@ -192,7 +189,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function (context) {
-                                    const dp = context.raw; // Access the full data point directly
+                                    const dp = context.raw;
                                     return `Year: ${dp.x}, Date: ${dp.date}, Moon: ${dp.moon}`;
                                 }
                             }
