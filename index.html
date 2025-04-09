@@ -30,6 +30,12 @@
             color: red;
             display: none;
         }
+        #result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -55,6 +61,7 @@
         <div id="chartContainer">
             <canvas id="lunarChart"></canvas>
         </div>
+        <p id="result"></p>
     </div>
 
     <script>
@@ -101,11 +108,13 @@
             const year = parseInt(document.getElementById('birthYear').value);
             const errorMsg = document.getElementById('errorMsg');
             const chartError = document.getElementById('chartError');
+            const result = document.getElementById('result');
 
             // Validate date
             const inputDate = new Date(year, month - 1, day);
             if (isNaN(inputDate) || inputDate.getMonth() + 1 !== month || inputDate.getDate() !== day) {
                 errorMsg.style.display = 'block';
+                result.textContent = '';
                 console.log("Invalid date entered");
                 return;
             }
@@ -135,10 +144,17 @@
             }
             console.log("Data points generated:", dataPoints);
 
+            // Calculate this year's lunar birthday
+            const thisYearDate = approximateLunarToGregorian(lunarMonth, lunarDay, currentYear);
+            const thisYearMoon = getFullMoonName(thisYearDate);
+            result.textContent = `Your Lunar Birthday this year is ${thisYearDate.toLocaleDateString()}, under the ${thisYearMoon}.`;
+            console.log(`This year's lunar birthday: ${thisYearDate.toLocaleDateString()}`);
+
             // Check if Chart.js is loaded
             if (typeof Chart === 'undefined') {
                 console.error("Chart.js not loaded");
                 chartError.style.display = 'block';
+                result.textContent = '';
                 return;
             }
 
