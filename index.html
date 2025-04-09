@@ -117,10 +117,11 @@
             const lunarMonth = 4;
             const lunarDay = 10;
 
-            // Generate data points
+            // Generate data points from birth year to current year + 10
             const dataPoints = [];
-            const startYear = year - 20;
-            const endYear = year + 20;
+            const startYear = year; // Start from birth year
+            const currentYear = 2025; // Current year as of April 9, 2025
+            const endYear = currentYear + 10; // 2035
             for (let y = startYear; y <= endYear; y++) {
                 const gregorianDate = approximateLunarToGregorian(lunarMonth, lunarDay, y);
                 const dayOfYear = moment(gregorianDate).dayOfYear();
